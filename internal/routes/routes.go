@@ -19,6 +19,7 @@ func SetupRoutes(r *mux.Router, db *mongo.Database) {
 	collection = db.Collection("cocktails")
 
 	r.HandleFunc("/api/cocktails", getCocktails).Methods("GET")
+	r.HandleFunc("/api/cocktails/{id}", getCocktail).Methods("GET")
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -55,4 +56,21 @@ func getCocktails(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, cocktails)
+}
+
+func getCocktail(w http.ResponseWriter, r *http.Request) {
+	var cocktail models.Cocktail
+
+	params := mux.Vars(r)
+	cocktailID := params["id"]
+
+	err := collection.FindOne(context.Background(), bson.D{{"_id", cocktailID}}).Decode(&cocktail)
+
+	if err != nil {
+		log.Printf("Error fetching cocktail: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error fetching cocktail"})
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, cocktail)
 }
