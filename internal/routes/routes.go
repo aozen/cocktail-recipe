@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +21,8 @@ func SetupRoutes(r *mux.Router, db *mongo.Database) {
 
 	r.HandleFunc("/api/cocktails", getCocktails).Methods("GET")
 	r.HandleFunc("/api/cocktails/{id}", getCocktail).Methods("GET")
+	r.HandleFunc("/api/cocktails", createCocktail).Methods("POST")
+
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -73,4 +76,20 @@ func getCocktail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, cocktail)
+}
+
+func createCocktail(w http.ResponseWriter, r *http.Request) {
+	var newCocktail models.Cocktail
+
+	_ = json.NewDecoder(r.Body).Decode(&newCocktail)
+	id := uuid.New()
+	newCocktail.ID = id.String()
+
+	_, err := collection.InsertOne(context.Background(), newCocktail)
+	if err != nil {
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error creating cocktail"})
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, newCocktail)
 }
