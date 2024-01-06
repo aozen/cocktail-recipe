@@ -88,6 +88,7 @@ func createCocktail(w http.ResponseWriter, r *http.Request) {
 
 	_, err := collection.InsertOne(context.Background(), newCocktail)
 	if err != nil {
+		log.Printf("Error creating cocktail: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error creating cocktail"})
 		return
 	}
@@ -107,6 +108,7 @@ func updateCocktail(w http.ResponseWriter, r *http.Request) {
 
 	_, err := collection.ReplaceOne(context.Background(), bson.D{{"_id", cocktailID}}, replacementCocktail)
 	if err != nil {
+		log.Printf("Error updating cocktail: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error updating cocktail"})
 		return
 	}
@@ -120,7 +122,7 @@ func deleteCocktail(w http.ResponseWriter, r *http.Request) {
 
 	_, err := collection.DeleteOne(context.Background(), bson.D{{"_id", cocktailID}})
 	if err != nil {
-		log.Printf("Error fetching cocktail: %v", err)
+		log.Printf("Error deleting cocktail: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error deleting cocktail"})
 		return
 	}
