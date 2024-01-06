@@ -23,7 +23,7 @@ func SetupRoutes(r *mux.Router, db *mongo.Database) {
 	r.HandleFunc("/api/cocktails/{id}", getCocktail).Methods("GET")
 	r.HandleFunc("/api/cocktails", createCocktail).Methods("POST")
 	r.HandleFunc("/api/cocktails/{id}", updateCocktail).Methods("PUT")
-
+	r.HandleFunc("/api/cocktails/{id}", deleteCocktail).Methods("DELETE")
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -112,4 +112,18 @@ func updateCocktail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, replacementCocktail)
+}
+
+func deleteCocktail(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	cocktailID := params["id"]
+
+	_, err := collection.DeleteOne(context.Background(), bson.D{{"_id", cocktailID}})
+	if err != nil {
+		log.Printf("Error fetching cocktail: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error deleting cocktail"})
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]string{"message": "Removed cocktail"})
 }
