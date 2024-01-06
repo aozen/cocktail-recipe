@@ -22,6 +22,7 @@ func SetupRoutes(r *mux.Router, db *mongo.Database) {
 	r.HandleFunc("/api/cocktails", getCocktails).Methods("GET")
 	r.HandleFunc("/api/cocktails/{id}", getCocktail).Methods("GET")
 	r.HandleFunc("/api/cocktails", createCocktail).Methods("POST")
+	r.HandleFunc("/api/cocktails/{id}", updateCocktail).Methods("PUT")
 
 }
 
@@ -92,4 +93,23 @@ func createCocktail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, newCocktail)
+}
+
+// Instead of update it's a replacement right now. Doesn't sure if its worth for checking every prop and updating matches
+// TODO: Check&Rewrite after a couple of months if this is not forgotten
+func updateCocktail(w http.ResponseWriter, r *http.Request) {
+	var replacementCocktail models.Cocktail
+
+	params := mux.Vars(r)
+	cocktailID := params["id"]
+
+	_ = json.NewDecoder(r.Body).Decode(&replacementCocktail)
+
+	_, err := collection.ReplaceOne(context.Background(), bson.D{{"_id", cocktailID}}, replacementCocktail)
+	if err != nil {
+		respondWithJSON(w, http.StatusInternalServerError, map[string]string{"error": "Error updating cocktail"})
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, replacementCocktail)
 }
