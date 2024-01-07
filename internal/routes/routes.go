@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"github.com/aozen/cocktail-recipe/internal/middleware"
 	"log"
 	"net/http"
 
@@ -16,14 +17,18 @@ import (
 
 var collection *mongo.Collection
 
+func SecureAPI(handler http.HandlerFunc) http.HandlerFunc {
+	return middleware.TokenVerifyMiddleware(handler)
+}
+
 func SetupRoutes(r *mux.Router, db *mongo.Database) {
 	collection = db.Collection("cocktails")
 
-	r.HandleFunc("/api/cocktails", getCocktails).Methods("GET")
-	r.HandleFunc("/api/cocktails/{id}", getCocktail).Methods("GET")
-	r.HandleFunc("/api/cocktails", createCocktail).Methods("POST")
-	r.HandleFunc("/api/cocktails/{id}", updateCocktail).Methods("PUT")
-	r.HandleFunc("/api/cocktails/{id}", deleteCocktail).Methods("DELETE")
+	r.HandleFunc("/api/cocktails", SecureAPI(getCocktails)).Methods("GET")
+	r.HandleFunc("/api/cocktails/{id}", SecureAPI(getCocktail)).Methods("GET")
+	r.HandleFunc("/api/cocktails", SecureAPI(createCocktail)).Methods("POST")
+	r.HandleFunc("/api/cocktails/{id}", SecureAPI(updateCocktail)).Methods("PUT")
+	r.HandleFunc("/api/cocktails/{id}", SecureAPI(deleteCocktail)).Methods("DELETE")
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
