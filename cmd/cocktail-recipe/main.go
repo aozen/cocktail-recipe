@@ -5,11 +5,17 @@ import (
 	"github.com/aozen/cocktail-recipe/internal/database"
 	"github.com/aozen/cocktail-recipe/internal/routes"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 )
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
+
 	mongoClient, err := database.InitMongoDB("mongodb://localhost:27017")
 	if err != nil {
 		log.Fatal(err)
