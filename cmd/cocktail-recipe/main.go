@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/aozen/cocktail-recipe/internal/database"
 	"github.com/aozen/cocktail-recipe/internal/routes"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
-	"log"
-	"net/http"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 		return
 	}
 
-	mongoClient, err := database.InitMongoDB("mongodb://localhost:27017")
+	mongoClient, err := database.InitMongoDB("mongodb://mongo:27017")
 	if err != nil {
 		log.Fatal(err)
 	}
